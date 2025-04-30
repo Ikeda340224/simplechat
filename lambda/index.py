@@ -4,6 +4,7 @@ import os
 import boto3
 import re  # 正規表現モジュールをインポート
 from botocore.exceptions import ClientError
+import urllib.request
 
 
 # Lambda コンテキストからリージョンを抽出する関数
@@ -15,11 +16,11 @@ def extract_region_from_arn(arn):
     return "us-east-1"  # デフォルト値
 
 # グローバル変数としてクライアントを初期化（初期値）
-bedrock_client = None
+#bedrock_client = None
 
 # モデルID
 #MODEL_ID = os.environ.get("MODEL_ID", "us.amazon.nova-lite-v1:0")
-MODEL_ID = "https://69fa-34-16-209-45.ngrok-free.app"
+MODEL_ID = "https://87f0-35-197-18-16.ngrok-free.app"
 
 def lambda_handler(event, context):
     try:
@@ -54,7 +55,7 @@ def lambda_handler(event, context):
         request_payload = {
             "prompt": "string",
             "max_new_tokens": 512,  ###
-            "stopSequences": [],
+      
             "do_sample": True,
             "temperature": 0.7,
             "top_p": 0.9  ###
@@ -62,14 +63,17 @@ def lambda_handler(event, context):
         }
         
         print("request to FastAPI:", json.dumps(request_payload))
-        
-        response = {####
+    
+        response = {
             "generated_text": "string",
             "response_time": 0
         }
-        
-        # レスポンスを解析
-        response_body = json.loads(response['body'].read())
+
+        url = f"{MODEL_ID}/generate"
+        with urllib.request.urlopen(url, data=json.dumps(request_payload).encode('utf-8')) as response:
+            response_body = json.loads(response.read().decode('utf-8'))
+
+    
         print("Bedrock response:", json.dumps(response_body, default=str))
         
         # 応答の検証
